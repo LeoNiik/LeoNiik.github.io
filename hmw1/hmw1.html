@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+
+<script src="hmw1.js"></script>
+<style>
+body {
+    height: 100vh;
+    width: 100%;
+    margin: 0px;
+
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: row ;
+    padding: 1%;
+    min-height: 600px;
+}
+
+.slidecontainer {
+  width: 100%;
+}
+
+.slider {
+  width: 100%;
+  height: 25px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+.hori {
+    display: flex;
+    flex-direction: row;
+}  
+
+#startbtn {
+    margin-top: 30px;
+    display: block;
+    width: 100%;
+}
+
+#paramid {
+    margin: 0px;
+}
+
+
+#canvadiv {
+    margin-left: 2%;
+    align-items: flex-end;
+}
+
+.notiondiv {
+    display: flex;
+    flex-wrap: wrap; /* Allows the divs to wrap if there's not enough space */
+    flex-direction: column;
+    gap: 20px; /* Adds space between each notion box */
+}
+
+.notion {
+    background-color: #f9f9f9; /* Light background for each notion */
+    border: 1px solid #ccc; /* Border around each notion */
+    border-radius: 8px; /* Rounded corners */
+    padding: 20px; /* Internal padding for better readability */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+    font-family: Arial, sans-serif; /* Font style */
+    font-size: 16px; /* Font size */
+    color: #333; /* Text color */
+    line-height: 1.5; /* Line height for readability */
+}
+
+.notiondiv .notion h2 {
+    font-size: 18px; /* Slightly larger font for the titles */
+    margin-bottom: 10px; /* Space between the title and the text */
+    color: #007bff; /* Color for the title (optional) */
+}
+
+
+</style>
+<body>
+    <div class="wrapper">
+        <div id="paramid">
+            <p>Select Parameters</p>
+            <div class="slidecontainer">
+                <p>Number of servers</p>
+                <div class="hori">
+                    <label class="sliderlabel">50</label>
+                    <input type="range" min="1" max="100" value="50" class="slider" id="servers">
+                </div>
+            </div>
+            <div class="slidecontainer">
+                <p>Number of attackers</p>
+                <div class="hori">
+                    <label class="sliderlabel">50</label>
+                    <input type="range" min="1" max="100" value="50" class="slider" id="attackers">
+                </div>
+                
+            </div>
+            <div class="slidecontainer">
+                <p>Succes Rate of attack in percentage</p>
+                <div class="hori">
+                    <label class="sliderlabel">70</label>
+                    <input type="range" min="1" max="100" value="70" class="slider" id="succrate">
+                </div>
+    
+            </div>
+            <input type="button" id="startbtn" value="Inizia" onclick="sim()">
+            <div>
+                <p>Computed Mean: <label for="mean" id="mean"></label></p>
+                
+            </div>
+        </div>
+        <div id="canvadiv"></div>
+    </div>
+        <div class="notiondiv">
+            <div class="notion"><h2>Population</h2><br>In statistics, a population refers to the entire set of individuals, items, or events of interest for a particular study. It is the complete group from which data is collected or analyzed. The population can be finite (with a limited number of elements) or infinite (with theoretically unlimited members).</div>
+            <div class="notion"><h2>Statistical Units</h2><br>A statistical unit is the basic entity or object on which data is collected in a statistical study. Each unit provides one set of data points for analysis. Statistical units are often referred to as individuals, observations, or data points.</div>
+            <div class="notion"><h2>Distribution</h2><br>A distribution in statistics refers to how values of a variable or a set of variables are spread or arranged over possible values. It shows how often each value occurs (frequency) or how likely each value is (probability). The distribution gives insight into the shape, central tendency, and spread of the data.</div>
+            <div class="notion">
+                <h2>Notion of Average</h2>
+                <p>The average (or mean) is a fundamental concept in statistics, representing the central or typical value of a set of data. There are several types of averages, but the most common is the arithmetic mean.</p>
+            
+                <h3>Arithmetic Mean:</h3>
+                <p>The sum of all the values divided by the number of values.</p>
+                
+                <p>
+                    <strong>Formula:</strong><br>
+                    <code>Mean = (x<sub>1</sub> + x<sub>2</sub> + ⋯ + x<sub>n</sub>) / n</code>
+                </p>
+                <p>
+                    Where <code>x<sub>1</sub>, x<sub>2</sub>, …, x<sub>n</sub></code> are the data points, and <code>n</code> is the number of data points.
+                </p>
+            </div>
+            
+        </div>
+</body>
+</html>
