@@ -14,7 +14,7 @@ body {
     display: flex;
     flex-direction: row ;
     padding: 1%;
-    min-height: 600px;
+    min-height: 580px;
 }
 
 .slidecontainer {
@@ -76,6 +76,10 @@ body {
     flex-wrap: wrap; /* Allows the divs to wrap if there's not enough space */
     flex-direction: column;
     gap: 20px; /* Adds space between each notion box */
+    max-width: 80%;
+    margin: 0 auto; /* Centers the div horizontally */
+    margin-top: 3%;
+    justify-content: center; /* Centers the content inside the flexbox */
 }
 
 .notion {
@@ -133,6 +137,7 @@ body {
         </div>
         <div id="canvadiv"></div>
     </div>
+    <hr>
         <div class="notiondiv">
             <div class="notion"><h2>Population</h2><br>
                 In statistics, a population refers to the entire set of individuals, items, or events of interest for a particular study.
@@ -188,11 +193,7 @@ body {
                 <p>Catastrophic cancellation occurs when subtracting two nearly equal numbers in floating-point arithmetic. In this case, significant digits are lost, and the result becomes highly inaccurate.
                     This problem is especially important in calculations involving differences of small numbers, as the precision loss can "cancel out" significant information, leading to wildly inaccurate results.
                 </p>
-            </div>
-            <div class="notion">
-            </div>
-                        
-            
+            </div>                        
         </div>
 </body>
 </html>
