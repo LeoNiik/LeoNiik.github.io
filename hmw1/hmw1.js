@@ -21,7 +21,7 @@ var heightDiff = Math.abs(lineChartHeight - plotHeight)
 
 var lineChartX = PADDING/2; // Punto di partenza del line chart
 var lineChartY = PADDING; 
-var plotChartX = lineChartWidth + 2*PADDING; // Punto di partenza del plot chart
+var plotChartX = lineChartWidth+lineChartX+ 3/2*PADDING; // Punto di partenza del plot chart
 var plotChartY = PADDING; 
 
 var lineWidth = 5;
@@ -44,18 +44,17 @@ function DrawAxis(ctx) {
     ctx.fillStyle = 'black';  // Colore del testo
     ctx.font = "12px Arial";  // Font per le etichette
     ctx.lineWidth = 2
-    // Disegna rettangolo del Line Char
-    drawLineChartArea(ctx);
 
-    // Disegna rettangolo del Plot Chart
+    drawLineChartArea(ctx);
     drawPlotChartArea(ctx);
-    // Aggiungi etichette sugli assi per entrambi i grafici
+
     drawAxisLabels(ctx, 'Servers', 'Penetrated', lineChartX -40, -10, true);
     drawAxisLabels(ctx, 'Frequency', 'Frequency', plotChartX -40, -10, false);
+
     drawXScalelineChart(RelativeCTX);
     drawYScalelineChart(RelativeCTX);
-    drawYAxisScale(absoluteCTX,m);
-    // drawXAxisScale(absoluteCTX,n);
+
+    // drawYAxisScale(absoluteCTX,m);
 
 }
 
@@ -80,7 +79,6 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     canvas.style.zIndex = 8;
     canvas.style.position = "absolute";
     canvas.border = '1px'
-    // canvas.style.border = "1px solid";
     
     
     var div = document.getElementById('canvadiv');
@@ -89,27 +87,18 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     RelativeCTX = absoluteCTX
     m = document.getElementById('servers').value;
     n = document.getElementById('attackers').value;
-    // plotChartY = PADDING - plotHeight/m
-    // plotHeight = 500+plotHeight/m
+
     drawLineChartArea(RelativeCTX);
 
-    // Disegna rettangolo del Plot Chart
     drawPlotChartArea(RelativeCTX);
-    // DrawExternalCanvas(absoluteCTX);
-
-
-    // RelativeCTX.clearRect(0, 0, canvas.width, canvas.height);
-
 });
 
 function drawAxisLabels(ctx, xLabel, yLabel, xPosition, yPosition, isLineChart) {
     ctx.fillStyle = 'black';
     ctx.font = "16px Arial";
     
-    // Label per asse X (in fondo)
     ctx.fillText(xLabel, xPosition + (isLineChart ? lineChartWidth / 2 : plotWidth / 2) - 40, yPosition + 30);
     
-    // Label per asse Y (sul lato sinistro, ruotata di 90 gradi)
     ctx.save();
     ctx.translate(xPosition, yPosition + (isLineChart ? lineChartHeight / 2 : plotHeight / 2));  // Posizionamento
     ctx.rotate(-Math.PI / 2);  // Ruota di 90 gradi per l'etichetta verticale
@@ -118,12 +107,9 @@ function drawAxisLabels(ctx, xLabel, yLabel, xPosition, yPosition, isLineChart) 
 }
 
 function recursiveAverage(arr, sum = 0, index = 0) {
-    // Base case: if the array is fully processed, return the average
     if (index === arr.length) {
         return sum / arr.length;
     }
-
-    // Recursive case: add the current element to the sum and move to the next index
     return recursiveAverage(arr, sum + arr[index], index + 1);
 }
 
@@ -170,7 +156,7 @@ function plotFrequencyDistribution(arr) {
     }
 
     drawXAxisScale(absoluteCTX, frequencies, maxVal);  // Disegna la scala dell'asse X
-    drawYAxisScale(absoluteCTX, m);  // Disegna la scala dell'asse Y con i valori possibili
+    // drawYAxisScale(absoluteCTX, m);  // Disegna la scala dell'asse Y con i valori possibili
 }
 
 // Funzione per contare le occorrenze dei valori in arr
@@ -186,24 +172,19 @@ function count(arr) {
     return c;
 }
 
-// Disegna la scala dell'asse Y con i valori possibili
 function drawYAxisScale(ctx, maxVal) {
     ctx.fillStyle = 'black';
     ctx.font = "12px Arial";
     ctx.lineWidth = 1;
 
-    // Disegna una scala sull'asse Y con i valori possibili
     let numXDivisions = Number(maxVal);
     for (let i = 0; i <= numXDivisions; i++) {
         let yValue = (maxVal/numXDivisions) * i
         let yPosition = (plotHeight + PADDING) - (plotHeight/numXDivisions) * i;
         
-        // Disegna il valore numerico dell'asse Y
         ctx.fillText(yValue.toFixed(0), plotChartX - 20, yPosition);
 
-        // Linea di riferimento
         if(i!=0){
-
             ctx.beginPath();
             ctx.moveTo(plotChartX, yPosition);
             ctx.lineTo(plotChartX + plotWidth, yPosition);
@@ -305,8 +286,7 @@ function sleep(ms) {
 function drawTrajectory(ctx){
     let currX = lineChartX; // Inizia dal rettangolo del line chart
     let CurrY = lineChartY+ heightDiff;
-    ctx.lineWidth = 5;
-    ctx.beginPath();
+    ctx.lineWidth = 3;
     let countSuccess = 0
     for(let i = 0;i<m;i++){
         if(Math.random()>probability){
@@ -323,19 +303,21 @@ function drawTrajectory(ctx){
             CurrY+=STEP/2;
             currX+=STEP;
             countSuccess++;
-        }    
+        }
     }
     attackersSuccesses.push(countSuccess)
     
 }
 
 function drawLine(xi, yi, xf, yf, ctx){
+    ctx.beginPath();
 
     ctx.moveTo(xi,canvas.height-yi);
     ctx.lineTo(xf,canvas.height-yf);
 
     // Draw the Path
     ctx.stroke();
+    ctx.closePath();
 }
 
 
