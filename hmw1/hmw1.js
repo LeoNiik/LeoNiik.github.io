@@ -233,7 +233,7 @@ function drawXScalelineChart(ctx){
     ctx.fillStyle = 'black';  // Colore del testo
     ctx.font = "12px Arial";  // Font per le etichette
     ctx.lineWidth = 2
-    for (let i = 0; i <= m; i++) {
+    for (let i = 0; i <= m; i+=m/10) {
         let xPos = i * stepSize;  // Posizione orizzontale dell'etichetta
 
         // Disegna la linea di "tick mark" sotto ogni step
@@ -254,7 +254,7 @@ function drawYScalelineChart(ctx) {
     ctx.font = "12px Arial";  // Font per le etichette
     ctx.lineWidth = 2;
     
-    for (let i = 1; i <= m; i++) {
+    for (let i = 1; i <= m; i+=10) {
         let yPos = lineChartHeight - (i * stepSize);  // Posizione verticale delle etichette e dei tick
 
         // Disegna la linea di "tick mark" accanto all'asse Y
@@ -320,5 +320,5 @@ function drawLine(xi, yi, xf, yf, ctx){
     ctx.closePath();
 }
 
-
+// dev(n) = dev(n-1) + (x(n)- x(n-1))*(x(n)-mean(n))
 
