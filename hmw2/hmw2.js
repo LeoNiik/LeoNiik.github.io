@@ -124,36 +124,48 @@ async function sim(){
     let attackers = initializeAttackers(n,m);
     attackersSuccesses = []
     
-    for(let j=0;j<m;j++){
-        await drawTrajectoryStep(ctx, attackers);        
+    for(let i = 0;i<n; i++){
+        drawTrajectory(ctx, attackers[i]);
+        plotFrequencyDistributionAtStep(attackers, Math.floor(Number(m)/2));
+        plotFrequencyDistributionAtStep(attackers, m)
+        await sleep(100);
     }
-    plotFrequencyDistributionAtStep(attackers, Math.floor(Number(m)/2));
-    plotFrequencyDistributionAtStep(attackers, m)
+    // for(let j=0;j<m;j++){
+    //     await drawTrajectoryStep(ctx, attackers);        
+    // }
+    // plotFrequencyDistributionAtStep(attackers, Math.floor(Number(m)/2));
+    // plotFrequencyDistributionAtStep(attackers, m)
+    // plotFrequencyDistributionAtStep(attackers, m)
     // mean = recursiveAverage(attackersSuccesses).toFixed(5);
     // document.getElementById('mean').innerText = mean 
 }
 
 function plotFrequencyDistributionAtStep(attackers, atStep){
     attackers.forEach(element => {
-        // console.log(element.successesPerStep);
-        attackersSuccesses.push(element.successesPerStep[atStep]);
+        if(element.successesPerStep[atStep]!=0)
+            attackersSuccesses.push(element.successesPerStep[atStep]);
     });
     plotFrequencyDistribution(attackersSuccesses, false, atStep);
     attackersSuccesses = [];
 
 }
+function cleanPlotChartArea(xPos, plotChartY, plotWidth, plotHeight, ctx){
+    ctx.clearRect(xPos, plotChartY, plotWidth, plotHeight);
 
+}
 function plotFrequencyDistribution(arr, relative, numAttack) {
     // Disegna i dati di frequenza nel rettangolo del plot chart
+
     let xPos = lineChartX+ numAttack*STEP;
+    cleanPlotChartArea(xPos, plotChartY, plotWidth, plotHeight, ctx);
+    
     drawPlotChartArea(xPos, plotChartY, plotWidth, plotHeight, ctx);
 
     let frequencies = count(arr);
     
     let maxVal = arrMax(frequencies);
     let barHeightUnit = 5//plotHeight/(Number(m));  // Altezza di una unità di frequenza
-    
-    console.log("frequencies",frequencies);
+    console.log(frequencies, arr)
     let barWidthUnit = relative ? plotWidth/m : plotWidth/maxVal;
     // Disegna le barre corrispondenti alle frequenze dei valori
 
@@ -164,7 +176,6 @@ function plotFrequencyDistribution(arr, relative, numAttack) {
         let yInit = lineChartY + lineChartHeight/2
         let yPos = yInit + i*STEP/4 - (numAttack-i)*(STEP/4) 
         
-        console.log(i, yPos/(STEP/4), freq);
         ctx.strokeStyle = 'blue';
         drawLine(xPos, yPos,xPos + barWidth, yPos , ctx);
     }
@@ -244,7 +255,25 @@ class Attacker {
         this.successes+=amount
     }
 }
+function drawTrajectory(ctx, attacker){
+    let baseX = lineChartX; // Inizia dal rettangolo del line chart
+    let baseY = lineChartY+ lineChartHeight/2;
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = attacker.color
+    for(let i =0 ; i<m; i++){
 
+        let coords = attacker.getCoords()
+        if(Math.random()>probability){       
+            drawLine(baseX+coords.x,baseY+coords.y,baseX+coords.x+STEP,baseY+coords.y-STEP/4, ctx);
+        }
+        else{
+            attacker.recordSuccess()
+            drawLine(baseX+coords.x,baseY+coords.y,baseX+coords.x+STEP,baseY+coords.y+STEP/4, ctx);
+        }
+        attacker.incrementStep()
+    }
+
+}
 function drawTrajectoryStep(ctx, attackers){
     let baseX = lineChartX; // Inizia dal rettangolo del line chart
     let baseY = lineChartY+ lineChartHeight/2;
