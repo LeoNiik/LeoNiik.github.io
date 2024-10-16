@@ -69,7 +69,15 @@ document.addEventListener('DOMContentLoaded', async (event) => {
         let sliderValue = sliderdiv.querySelector('.sliderlabel')
         sliderValue.textContent = slider.value;
         parameters[slider.id] = slider.value;
-
+        if(slider.id === "servers"){
+        let timesliderdiv = document.getElementById("timeslider");
+        let timeSlider = timesliderdiv.querySelector('.slider');
+        let timeLabel = timesliderdiv.querySelector('.sliderlabel');
+        timeSlider.max = Math.floor(Number(slider.value)*2/3).toString();
+        timeSlider.value = Math.floor(Number(slider.value)/3).toString();
+        parameters["time"] = timeSlider.value;
+        timeLabel.textContent = timeSlider.value; 
+        }
         slider.addEventListener('input', function() {
             sliderValue.textContent = slider.value;
             parameters[slider.id] = slider.value;
@@ -112,34 +120,26 @@ function initializeAttackers(n,m) {
     return attackers;
 }
 
-// Function to calculate the average recursively
-function recursiveAverage(arr, sum = 0, index = 0) {
-    if (index === arr.length) {
-        return sum / arr.length;
+// Function to calculate mean and variance using Welford's method
+function welfordVariance(arr) {
+    let mean = 0;
+    let M2 = 0;  // Sum of squared differences
+    let n = 0;   // Count of elements
+
+    for (let x of arr) {
+        n += 1;
+        let delta = x - mean;       // Difference between current element and mean
+        mean += delta / n;          // Update mean
+        let delta2 = x - mean;      // Difference after updating the mean
+        M2 += delta * delta2;       // Update the sum of squared differences
     }
-    return recursiveAverage(arr, sum + arr[index], index + 1);
+
+    // Variance is M2 divided by the number of elements
+    let variance = M2 / n;
+
+    return { mean, variance };
 }
 
-// Function to calculate the variance recursively
-function recursiveVariance(arr, mean, sumSquaredDiff = 0, index = 0) {
-    if (index === arr.length) {
-        return sumSquaredDiff / arr.length;
-    }
-    // Calculate squared difference for current element
-    const squaredDiff = (arr[index] - mean) ** 2;
-    // Recursively sum squared differences
-    return recursiveVariance(arr, mean, sumSquaredDiff + squaredDiff, index + 1);
-}
-
-// Function to calculate both average and variance
-function averageAndVariance(arr) {
-    // Calculate average first
-    const mean = recursiveAverage(arr);
-    // Calculate variance using the mean
-    const variance = recursiveVariance(arr, mean);
-    
-    return { mean : mean, variance : variance};
-}
 
 async function sim(){
     
@@ -192,7 +192,7 @@ function plotFrequencyDistributionAtStep(attackers, atStep, relative){
             attackersSuccesses.push(element.successesPerStep[atStep]);
     });
     plotFrequencyDistribution(attackersSuccesses, relative, atStep);
-    statistics = averageAndVariance(attackersSuccesses);
+    statistics = welfordVariance(attackersSuccesses);
     document.getElementById('mean').innerText = statistics.mean.toFixed(5)
     document.getElementById('variance').innerText = statistics.variance.toFixed(5)
     
