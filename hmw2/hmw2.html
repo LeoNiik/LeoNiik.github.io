@@ -100,6 +100,62 @@ body {
     color: #007bff; /* Color for the title (optional) */
 }
 
+/* Container for the radio buttons */
+.radio-box {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    font-family: Arial, sans-serif;
+}
+
+.radio-box label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Hide the default radio button */
+.radio-box input[type="radio"] {
+    display: none;
+}
+
+/* Custom radio button appearance */
+.radio-custom {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #888;
+    margin-right: 8px;
+    position: relative;
+}
+
+/* Filled state when the radio button is checked */
+.radio-box input[type="radio"]:checked + .radio-custom {
+    background-color: #4CAF50; /* Green when selected */
+    border-color: #4CAF50;
+}
+
+.radio-custom::before {
+    content: '';
+    display: block;
+    width: 12px;
+    height: 12px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+}
+
+/* Inner circle is shown when selected */
+.radio-box input[type="radio"]:checked + .radio-custom::before {
+    opacity: 1;
+}
+
 
 </style>
 <body>
@@ -110,14 +166,14 @@ body {
                 <p>Number of servers</p>
                 <div class="hori">
                     <label class="sliderlabel">50</label>
-                    <input type="range" min="1" max="1000" value="50" class="slider" id="servers">
+                    <input type="range" min="1" max="800" value="50" class="slider" id="servers">
                 </div>
             </div>
             <div class="slidecontainer">
                 <p>Number of attackers</p>
                 <div class="hori">
                     <label class="sliderlabel">50</label>
-                    <input type="range" min="1" max="1000" value="50" class="slider" id="attackers">
+                    <input type="range" min="1" max="800" value="50" class="slider" id="attackers">
                 </div>
                 
             </div>
@@ -129,9 +185,31 @@ body {
                 </div>
     
             </div>
+            <div class="slidecontainer" id="timeslider">
+                <p>Time for the intermediate plot</p>
+                <div class="hori">
+                    <label class="sliderlabel">70</label>
+                    <input type="range" min="1" max="100" value="70" class="slider" id="time">
+                </div>
+    
+            </div>
+            <div class="radio-box">
+                <label>
+                    <input type="radio" name="state" value="on" checked>
+                    <span class="radio-custom"></span>
+                    Relative
+                </label>
+                <label>
+                    <input type="radio" name="state" value="off">
+                    <span class="radio-custom"></span>
+                    Absolute
+                </label>
+            </div>
+            
             <input type="button" id="startbtn" value="Inizia" onclick="sim()">
             <div>
                 <p>Computed Mean: <label for="mean" id="mean"></label></p>
+                <p>Computed Variance: <label for="variance" id="variance"></label></p>
                 
             </div>
         </div>

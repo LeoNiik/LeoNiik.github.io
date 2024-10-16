@@ -13,7 +13,7 @@ var ctx;
 var attackersSuccesses;
 
 // var attackers;
-
+let parameters = {}
 
 //Graphics widths and heights
 var PADDING = 50;
@@ -62,13 +62,26 @@ function DrawAxis(ctx) {
 document.addEventListener('DOMContentLoaded', async (event) => {
     const sliderdivs = document.querySelectorAll('.slidecontainer');
     
+
     // Aggiorna il valore del label quando lo slider cambia
     sliderdivs.forEach(sliderdiv => {
         let slider = sliderdiv.querySelector('.slider');
         let sliderValue = sliderdiv.querySelector('.sliderlabel')
         sliderValue.textContent = slider.value;
+        parameters[slider.id] = slider.value;
+
         slider.addEventListener('input', function() {
             sliderValue.textContent = slider.value;
+            parameters[slider.id] = slider.value;
+            if(slider.id === "servers"){
+                let timesliderdiv = document.getElementById("timeslider");
+                let timeSlider = timesliderdiv.querySelector('.slider');
+                let timeLabel = timesliderdiv.querySelector('.sliderlabel');
+                timeSlider.max = Math.floor(Number(slider.value)*2/3).toString();
+                timeSlider.value = Math.floor(Number(slider.value)/3).toString();
+                parameters["time"] = timeSlider.value;
+                timeLabel.textContent = timeSlider.value; 
+            } 
         });
     });
 
@@ -99,6 +112,7 @@ function initializeAttackers(n,m) {
     return attackers;
 }
 
+// Function to calculate the average recursively
 function recursiveAverage(arr, sum = 0, index = 0) {
     if (index === arr.length) {
         return sum / arr.length;
@@ -106,50 +120,83 @@ function recursiveAverage(arr, sum = 0, index = 0) {
     return recursiveAverage(arr, sum + arr[index], index + 1);
 }
 
+// Function to calculate the variance recursively
+function recursiveVariance(arr, mean, sumSquaredDiff = 0, index = 0) {
+    if (index === arr.length) {
+        return sumSquaredDiff / arr.length;
+    }
+    // Calculate squared difference for current element
+    const squaredDiff = (arr[index] - mean) ** 2;
+    // Recursively sum squared differences
+    return recursiveVariance(arr, mean, sumSquaredDiff + squaredDiff, index + 1);
+}
+
+// Function to calculate both average and variance
+function averageAndVariance(arr) {
+    // Calculate average first
+    const mean = recursiveAverage(arr);
+    // Calculate variance using the mean
+    const variance = recursiveVariance(arr, mean);
+    
+    return { mean : mean, variance : variance};
+}
+
 async function sim(){
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = '#000000'
+    // let timeSlider = document.getElementById('') 
+
+    m = Number(parameters["servers"]) || 50;
+    n = Number(parameters["attackers"]) || 50;
+    probability = Number(parameters["succrate"])/100 || 0.7;
+    t = Number(parameters["time"]) || 16;
     
-    m = document.getElementById('servers').value;
-    n = document.getElementById('attackers').value;
-    probability = document.getElementById('succrate').value/100;
+    console.log(m,n,probability,t);
+
+
+    let selectedRadio = document.querySelector('input[name="state"]:checked').value;
+    let relative = selectedRadio === "on" ? true : false;
+    
+    //define the step
     STEP = lineChartWidth/m
     // plotChartY = PADDING - plotHeight/m
-
     
     DrawAxis(ctx);
+
+    
     let attackers = initializeAttackers(n,m);
     let AllPaths = []
     attackersSuccesses = []
     
     for(let i = 0;i<n; i++){
-
-        let newPath = drawTrajectoryRelative(ctx, attackers[i]);
+        
+        let newPath = drawTrajectoryRelative(ctx, attackers[i], relative);
         AllPaths.push(newPath);
         ctx.stroke(newPath);
         // reDrawTrajectories(ctx,AllPaths, attackers, i);
         
         // await sleep(10);
     }
-    plotFrequencyDistributionAtStep(attackers, Math.floor(Number(m)/2));
-    plotFrequencyDistributionAtStep(attackers, m)
-    // for(let j=0;j<m;j++){
-    //     await drawTrajectoryStep(ctx, attackers);        
-    // }
-    // plotFrequencyDistributionAtStep(attackers, Math.floor(Number(m)/2));
-    // plotFrequencyDistributionAtStep(attackers, m)
-    // plotFrequencyDistributionAtStep(attackers, m)
-    // mean = recursiveAverage(attackersSuccesses).toFixed(5);
-    // document.getElementById('mean').innerText = mean 
+    
+    plotFrequencyDistributionAtStep(attackers, t, relative);
+    await sleep(1000);
+
+    plotFrequencyDistributionAtStep(attackers, m, relative)
+
 }
 
-function plotFrequencyDistributionAtStep(attackers, atStep){
+function plotFrequencyDistributionAtStep(attackers, atStep, relative){
     attackers.forEach(element => {
         if(element.successesPerStep[atStep]!== undefined)
             attackersSuccesses.push(element.successesPerStep[atStep]);
     });
-    plotFrequencyDistribution(attackersSuccesses, true, atStep);
+    plotFrequencyDistribution(attackersSuccesses, relative, atStep);
+    statistics = averageAndVariance(attackersSuccesses);
+    document.getElementById('mean').innerText = statistics.mean.toFixed(5)
+    document.getElementById('variance').innerText = statistics.variance.toFixed(5)
+    
+
     attackersSuccesses = [];
 
 }
@@ -161,31 +208,37 @@ function plotFrequencyDistribution(arr, relative, numAttack) {
     // Disegna i dati di frequenza nel rettangolo del plot chart
 
     let xPos = lineChartX+ numAttack*STEP;
+
+    //cleans and redraw the area
     cleanPlotChartArea(xPos, plotChartY, plotWidth, plotHeight, ctx);
-    
     drawChartArea(xPos, plotChartY, plotWidth, plotHeight, ctx);
 
-    let frequencies = count(arr);
+    let frequencies = count(arr); //array containing all the frequencies of every n° of success
     
-    let maxVal = arrMax(frequencies);
+    let maxVal = arrMax(frequencies); //find the maximum
     let barHeightUnit = 5//plotHeight/(Number(m));  // Altezza di una unità di frequenza
-    // console.log(frequencies, arr)
-    let scale = relative ?  (lineChartHeight/(2*numAttack)) : STEP/4
+
+    let scaleFactor = relative ?  (lineChartHeight/(2*numAttack)) : STEP/4
     let barWidthUnit = plotWidth/maxVal;
-    // Disegna le barre corrispondenti alle frequenze dei valori
+    
     ctx.lineWidth = 7
     ctx.strokeStyle = 'yellow';
+    let Histogram = []
 
     for (let i = 0; i < frequencies.length; i++) {
+
         let freq = frequencies[i] || 0;  // Se il valore non esiste, usa 0
         let barWidth = freq * barWidthUnit;  // Altezza della barra in base alla frequenza 
         
         let yInit = lineChartY + lineChartHeight/2
-        let yPos = yInit + i*scale - (numAttack-i)*scale
-
-        drawLine(xPos, yPos,xPos + barWidth, yPos , ctx);
+        let yPos = yInit + i*scaleFactor - (numAttack-i)*scaleFactor
+        let entry = new Path2D();
+        drawPathLine(xPos, yPos,xPos + barWidth, yPos , entry);
+        Histogram.push(entry);
+        ctx.stroke(entry);
     }
-
+    return Histogram
+    
 }
 
 
@@ -227,7 +280,7 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-
+//Future implementation
 class Chart {
 
     constructor(xPos, yPos, width, height, ctx){
@@ -252,6 +305,7 @@ class Chart {
 
     
 }
+
 
 class Attacker {
     constructor(id, nserv) {
@@ -278,17 +332,13 @@ class Attacker {
         if (this.successesPerStep[this.step] === undefined) {
             this.successesPerStep[this.step] =  0;
         }
-        if(rel){
-            if(nAtt==0)
-                return {x : 0, y: 0}
 
-            let insuccesses = nAtt - this.successesPerStep[nAtt]
-            let relFactor = (this.successesPerStep[nAtt]/nAtt)*lineChartHeight/2 - (insuccesses/nAtt) * lineChartHeight/2;
+        let scaleFactor = rel ?  (lineChartHeight/(2*nAtt)) : STEP/4
 
+        if(nAtt==0)
+            return {x : 0, y: 0}
 
-            return {x : nAtt * STEP, y: relFactor}
-        }
-        return {x : nAtt * STEP, y: this.successesPerStep[nAtt]*STEP/4 - (nAtt-this.successesPerStep[nAtt])*(STEP/4)}
+        return {x : nAtt * STEP, y: this.successesPerStep[nAtt]*scaleFactor - (nAtt-this.successesPerStep[nAtt])*scaleFactor}
     }
 
     // Method to record a success (increment successes by 1 or a specific amount)
@@ -296,58 +346,8 @@ class Attacker {
         this.successes+=amount;
     }
 }
-// function drawTrajectory(ctx, attacker){
-//     let baseX = lineChartX; // Inizia dal rettangolo del line chart
-//     let baseY = lineChartY+ lineChartHeight/2;
-//     ctx.lineWidth = lineWidth;
-//     ctx.strokeStyle = attacker.color
-//     for(let i =0 ; i<m; i++){
 
-//         let coords = attacker.getCoords(i,false)
-//         // console.log(coords.x/STEP, coords.y/(STEP/4), (coords.x)/STEP + 1, coords.y, attacker.step)
-
-//         if(Math.random()>probability){       
-//             drawLine(baseX+coords.x,baseY+coords.y,baseX+coords.x+STEP,baseY+coords.y-STEP/4, ctx);
-//         }
-//         else{
-//             attacker.recordSuccess()
-//             drawLine(baseX+coords.x,baseY+coords.y,baseX+coords.x+STEP,baseY+coords.y+STEP/4, ctx);
-//         }
-//         attacker.incrementStep()
-//     }
-
-// }
-
-function drawTrajectory(ctx, attacker) {
-    let baseX = lineChartX;
-    let baseY = lineChartY + lineChartHeight / 2;
-    ctx.lineWidth = lineWidth;
-    ctx.strokeStyle = attacker.color;
-
-    // Creiamo un nuovo oggetto Path2D per memorizzare il percorso della traiettoria
-    let path = new Path2D();
-
-    for (let i = 0; i < m; i++) {
-        let coords = attacker.getCoords(i, false); //coordinate al tempo i
-        
-        let randomJump = (Math.random() > probability) ? -1 : 1; 
-        if(randomJump > 0) 
-            attacker.recordSuccess();
-
-        let startX = baseX + coords.x;
-        let startY = baseY + coords.y;
-        
-        let endX = startX + STEP;
-        let endY = startY + (randomJump*(STEP/4));
-        console.log((startX - baseX)/STEP, (startY - baseY)/(STEP/4), (endX - baseX)/STEP, (endY - baseY)/(STEP/4));
-        drawPathLine(startX, startY, endX, endY, path);
-        attacker.incrementStep();
-    }
-    return path
-}
-
-
-function drawTrajectoryRelative(ctx, attacker) {
+function drawTrajectoryRelative(ctx, attacker, rel) {
     let baseX = lineChartX; // Coordinate base del grafico
     let baseY = lineChartY + lineChartHeight/2;
     ctx.lineWidth = lineWidth;
@@ -357,8 +357,8 @@ function drawTrajectoryRelative(ctx, attacker) {
     let path = new Path2D();
 
     for (let i = 1; i <= m; i++) {
-        // Otteniamo le coordinate relative al passo precedente (i-1) e al passo attuale (i)
-        let prevCoords = attacker.getCoords(i - 1, true); // Coordinate al tempo i-1
+        
+        let prevCoords = attacker.getCoords(i - 1, rel); // Coordinate al tempo i-1
 
         let randomJump = (Math.random() > probability) ? -1 : 1; 
         if (randomJump > 0) {
@@ -368,55 +368,17 @@ function drawTrajectoryRelative(ctx, attacker) {
         // Aggiorniamo il passo dell'attaccante
         attacker.incrementStep();
 
-        let currCoords = attacker.getCoords(i, true);     // Coordinate al tempo i
-        // console.log(prevCoords, currCoords)
-        // Calcoliamo le coordinate assolute a partire da baseX e baseY
-        //come capire se andare verso l-alto o verso il basso
+        let currCoords = attacker.getCoords(i, rel);     // Coordinate al tempo i
+
         let startX = baseX + prevCoords.x;
         let startY = baseY + (prevCoords.y); // Invertito per disegnare dal basso verso l'alto
         let endX = baseX + currCoords.x;
         let endY = baseY + (currCoords.y);   // Invertito per lo stesso motivo
         
-        // Aggiungiamo la linea al percorso Path2D
         drawPathLine(startX, startY, endX, endY, path);
-        // Simuliamo un attacco con probabilità di successo
     }
 
-    // Disegniamo il percorso una volta che tutte le linee sono state aggiunte
     return path;
-}
-
-
-function createSinglePath(s) {
-    
-    currentPathNumber = s;
-    const myPath = new Path2D();
-    
-    let sumOfJumps = 0;
-    let previousY_Variate = y_Origin;
-
-    myPath.moveTo(x_Origin, y_Origin);   //visualmente facciamo partire la path dall'origine
-
-    for (let t = 1; t <= n; t++) {
-
-        sumOfJumps += myRandomJump();
-        let myProcessValue = myVariate(sumOfJumps, t);
-
-        const ascissa_t = My2dUtilities.transformX(t / n, 0, 1, rectChart.x, rectChart.width);
-
-        //const ascissa_t = My2dUtilities.transformX(t, 0, n, rectChart.x, rectChart.width);
-        const ordinata = My2dUtilities.transformY(myProcessValue, myVariate_MinView, myProcessValue_Range, rectChart.y, rectChart.height);
-
-        //scalino mantenendo quota precedente
-        myPath.lineTo(ascissa_t, previousY_Variate);
-        //salva quota per prossimo scalino
-        previousY_Variate = ordinata;
-        
-        myPath.lineTo(ascissa_t, ordinata);
-    }
-
-    return myPath;
-
 }
 
 
@@ -426,31 +388,6 @@ function reDrawTrajectories(ctx, paths, attackers, time){
         ctx.strokeStyle = attackers[i].color;
         ctx.stroke(paths[i]);
     }
-}
-
-
-function drawTrajectoryStep(ctx, attackers){
-    let baseX = lineChartX; // Inizia dal rettangolo del line chart
-    let baseY = lineChartY+ lineChartHeight/2;
-    ctx.lineWidth = lineWidth;
-    attackers.forEach(element => {
-        ctx.strokeStyle = element.color
-        
-        let coords = element.getCoords(true)
-        // console.log(coords)
-        if(Math.random()>probability){       
-            drawLine(baseX+coords.x,baseY+coords.y,baseX+coords.x+STEP,baseY+coords.y-STEP/4, ctx);
-        }
-        else{
-            element.recordSuccess()
-            drawLine(baseX+coords.x,baseY+coords.y,baseX+coords.x+STEP,baseY+coords.y+STEP/4, ctx);
-        }
-        element.incrementStep()
-        // console.log(coords.x/STEP , coords.y/(STEP/4))
-    });
-
-    
-    
 }
 
 function drawLine(xi, yi, xf, yf, ctx){
