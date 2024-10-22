@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Random walk Poisson Distribution</title>
+        <!-- Include MathJax script -->
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script src="hmw3.js"></script>
+    </head>
+
+<style>
+body {
+    height: 100vh;
+    width: 100%;
+    margin: 0px;
+
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: row ;
+    padding: 1%;
+    min-height: 580px;
+}
+
+.slidecontainer {
+  width: 100%;
+}
+
+.slider {
+  width: 100%;
+  height: 25px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+.hori {
+    display: flex;
+    flex-direction: row;
+}  
+
+#startbtn {
+    margin-top: 30px;
+    display: block;
+    width: 100%;
+}
+
+#paramid {
+    margin: 0px;
+}
+
+
+#canvadiv {
+    margin-left: 2%;
+    align-items: flex-end;
+}
+
+.notiondiv {
+    display: flex;
+    flex-wrap: wrap; /* Allows the divs to wrap if there's not enough space */
+    flex-direction: column;
+    gap: 20px; /* Adds space between each notion box */
+    max-width: 80%;
+    margin: 0 auto; /* Centers the div horizontally */
+    margin-top: 3%;
+    justify-content: center; /* Centers the content inside the flexbox */
+}
+
+.notion {
+    background-color: #f9f9f9; /* Light background for each notion */
+    border: 1px solid #ccc; /* Border around each notion */
+    border-radius: 8px; /* Rounded corners */
+    padding: 20px; /* Internal padding for better readability */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+    font-family: Arial, sans-serif; /* Font style */
+    font-size: 16px; /* Font size */
+    color: #333; /* Text color */
+    line-height: 1.5; /* Line height for readability */
+}
+
+.notiondiv .notion h2 {
+    font-size: 18px; /* Slightly larger font for the titles */
+    margin-bottom: 10px; /* Space between the title and the text */
+    color: #007bff; /* Color for the title (optional) */
+}
+
+/* Container for the radio buttons */
+.radio-box {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    font-family: Arial, sans-serif;
+}
+
+.radio-box label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Hide the default radio button */
+.radio-box input[type="radio"] {
+    display: none;
+}
+
+/* Custom radio button appearance */
+.radio-custom {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #888;
+    margin-right: 8px;
+    position: relative;
+}
+
+/* Filled state when the radio button is checked */
+.radio-box input[type="radio"]:checked + .radio-custom {
+    background-color: #4CAF50; /* Green when selected */
+    border-color: #4CAF50;
+}
+
+.radio-custom::before {
+    content: '';
+    display: block;
+    width: 12px;
+    height: 12px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+}
+
+/* Inner circle is shown when selected */
+.radio-box input[type="radio"]:checked + .radio-custom::before {
+    opacity: 1;
+}
+
+
+</style>
+<body>
+    <div class="wrapper">
+        <div id="paramid">
+            <p>Select Parameters</p>
+            <div class="slidecontainer">
+                <p>lambda</p>
+                <div class="hori">
+                    <label class="sliderlabel">50</label>
+                    <input type="range" min="1" max="800" value="50" class="slider" id="lambda">
+                </div>
+            </div>
+            <div class="slidecontainer">
+                <p>Number of attackers</p>
+                <div class="hori">
+                    <label class="sliderlabel">50</label>
+                    <input type="range" min="1" max="800" value="50" class="slider" id="attackers">
+                </div>
+                
+            </div>
+            <div class="slidecontainer">
+                <p>Number of intervals on the x axis</p>
+                <div class="hori">
+                    <label class="sliderlabel">70</label>
+                    <input type="range" min="1" max="100" value="70" class="slider" id="intervals">
+                </div>
+    
+            </div>
+            <div class="slidecontainer" id="timeslider">
+                <p>Time for the intermediate plot</p>
+                <div class="hori">
+                    <label class="sliderlabel">70</label>
+                    <input type="range" min="1" max="100" value="70" class="slider" id="time">
+                </div>
+    
+            </div>
+            <div class="radio-box">
+                <label>
+                    <input type="radio" name="state" value="on" checked>
+                    <span class="radio-custom"></span>
+                    Relative
+                </label>
+                <label>
+                    <input type="radio" name="state" value="off">
+                    <span class="radio-custom"></span>
+                    Absolute
+                </label>
+            </div>
+            
+            <input type="button" id="startbtn" value="Inizia" onclick="sim()">
+            <div>
+                <p>Computed Mean: <label for="mean" id="mean"></label></p>
+                <p>Computed Variance: <label for="variance" id="variance"></label></p>
+                
+            </div>
+        </div>
+        <div id="canvadiv"></div>
+    </div>
+    <hr>
+        <div class="notiondiv">
+
+            <div class="notion">
+                <h1>Possible ways to conceptualize mean</h1>
+                <h2>Center of Gravity in Physics</h2>
+
+                In a physical system, the mean can be interpreted as the "center of gravity" of a set of masses.
+                If each data point is imagined as having a mass, the mean is the point where the system balances in a gravitational field.
+                <h2>Minimizing Squared Deviations</h2>
+
+                The mean minimizes the sum of squared deviations from itself.
+                Mathematically, it’s the value that makes the squared differences between the mean and each data point as small as possible.
+
+                <h2>Arithmetic Center</h2>
+
+                The mean is the "arithmetic center" or balance point of a set of numbers. 
+                If you imagine each number as a weight placed on a number line, the mean is the point where the system would balance perfectly.
+                
+                <h2>Expectation in Probability</h2>
+
+                <p>In probability theory, the mean (or expected value) represents the long-term average outcome if an experiment is repeated many times. It’s the value you would "expect" on average from a probabilistic event.</p>
+            
+                <p><strong>Example:</strong> For a fair six-sided die, the expected value (mean outcome) is:</p>
+            
+                <p>
+                    \[
+                    \frac{1 + 2 + 3 + 4 + 5 + 6}{6} = 3.5
+                    \]
+                </p>
+            
+                <p>Over many rolls, the average result converges to 3.5.</p>
+            
+            
+            </div>
+            <div class="notion">
+                <h1>Minimizing the Sum of Absolute Differences</h1>
+                <p>
+                    We want to minimize the sum of absolute differences given by:
+                </p>
+                <p>
+                    \[
+                    S(c) = \sum_{i=1}^{n} |x_i - c|
+                    \]
+                </p>
+                <p>
+                    Here, \( S(c) \) represents the sum of absolute deviations of the points \( x_1, x_2, \dots, x_n \) from the variable \( c \). The goal is to minimize this function with respect to \( c \).
+                </p>
+                
+                <h2>1. Derivative of the Absolute Value Function</h2>
+                <p>
+                    The absolute value function \( |x - c| \) has a piecewise derivative:
+                </p>
+                <p>
+                    \[
+                    \frac{d}{dc} |x_i - c| = 
+                    \begin{cases} 
+                    -1 & \text{if } c < x_i \\
+                    0 & \text{if } c = x_i \\
+                    1 & \text{if } c > x_i 
+                    \end{cases}
+                    \]
+                </p>
+                <p>
+                    This means that for each point \( x_i \), the derivative of \( |x_i - c| \) is constant in each region where \( c \) is either less than, equal to, or greater than \( x_i \).
+                </p>
+
+                <h2>2. Summing the Derivatives</h2>
+                <p>
+                    The total function \( S(c) \) is the sum of absolute differences for all points:
+                </p>
+                <p>
+                    \[
+                    S(c) = \sum_{i=1}^{n} |x_i - c|
+                    \]
+                </p>
+                <p>
+                    The derivative of \( S(c) \) is the sum of the derivatives of the absolute value functions:
+                </p>
+                <p>
+                    \[
+                    S'(c) = \sum_{i=1}^{n} \frac{d}{dc} |x_i - c|
+                    \]
+                </p>
+                <p>
+                    Using the piecewise derivative of \( |x_i - c| \), we get:
+                </p>
+                <p>
+                    \[
+                    S'(c) = 
+                    \begin{cases} 
+                    -n & \text{if } c < x_1 \\
+                    -(n - k) + k & \text{if } x_k \leq c < x_{k+1} \\
+                    n & \text{if } c > x_n
+                    \end{cases}
+                    \]
+                </p>
+                <p>
+                    Where \( k \) is the number of points \( x_i \) that are less than \( c \). This describes how the derivative of \( S(c) \) changes as \( c \) crosses different points in the dataset.
+                </p>
+
+                <h2>3. Interpreting the Result</h2>
+                <p>
+                    For \( x_k \leq c < x_{k+1} \), the derivative can be written as:
+                </p>
+                <p>
+                    \[
+                    S'(c) = - \text{number of points to the left of } c + \text{number of points to the right of } c
+                    \]
+                </p>
+                <p>
+                    This is because for each point to the left of \( c \), the derivative contributes \( -1 \), and for each point to the right of \( c \), the derivative contributes \( +1 \).
+                </p>
+
+                <h2>4. Behavior of the Derivative</h2>
+                <p>
+                    - For \( c < x_1 \), all points are to the right of \( c \), so \( S'(c) = -n \).
+                    <br>
+                    - For \( c > x_n \), all points are to the left of \( c \), so \( S'(c) = n \).
+                    <br>
+                    - As \( c \) passes through each \( x_i \), the derivative increases by 2 because each time \( c \) crosses a point \( x_i \), the contribution to the derivative switches from \(-1\) to \( +1 \).
+                </p>
+
+                <h2>5. Conclusion</h2>
+                <p>
+                    The function \( S(c) \) reaches its minimum when the number of points to the left and right of \( c \) are balanced. This occurs when \( c \) is the <strong>median</strong> of the points \( x_1, x_2, \dots, x_n \), because at the median, the number of points to the left equals the number of points to the right.
+                </p>
+
+            </div>
+        </div>
+</body>
+</html>
