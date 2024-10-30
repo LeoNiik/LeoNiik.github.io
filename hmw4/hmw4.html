@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Random walk Poisson Distribution</title>
+        <!-- Include MathJax script -->
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script src="hmw4.js"></script>
+    </head>
+
+<style>
+body {
+    height: 100vh;
+    width: 100%;
+    margin: 0px;
+
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: row ;
+    padding: 1%;
+    min-height: 580px;
+}
+
+.slidecontainer {
+  width: 100%;
+}
+
+.slider {
+  width: 100%;
+  height: 25px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+.hori {
+    display: flex;
+    flex-direction: row;
+}  
+
+#startbtn {
+    margin-top: 30px;
+    display: block;
+    width: 100%;
+}
+
+#paramid {
+    margin: 0px;
+}
+
+
+#canvadiv {
+    margin-left: 2%;
+    align-items: flex-end;
+}
+
+.notiondiv {
+    display: flex;
+    flex-wrap: wrap; /* Allows the divs to wrap if there's not enough space */
+    flex-direction: column;
+    gap: 20px; /* Adds space between each notion box */
+    max-width: 80%;
+    margin: 0 auto; /* Centers the div horizontally */
+    margin-top: 3%;
+    justify-content: center; /* Centers the content inside the flexbox */
+}
+
+.notion {
+    background-color: #f9f9f9; /* Light background for each notion */
+    border: 1px solid #ccc; /* Border around each notion */
+    border-radius: 8px; /* Rounded corners */
+    padding: 20px; /* Internal padding for better readability */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+    font-family: Arial, sans-serif; /* Font style */
+    font-size: 16px; /* Font size */
+    color: #333; /* Text color */
+    line-height: 1.5; /* Line height for readability */
+}
+
+.notiondiv .notion h2 {
+    font-size: 18px; /* Slightly larger font for the titles */
+    margin-bottom: 10px; /* Space between the title and the text */
+    color: #007bff; /* Color for the title (optional) */
+}
+
+/* Container for the radio buttons */
+.radio-box {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    font-family: Arial, sans-serif;
+}
+
+.radio-box label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Hide the default radio button */
+.radio-box input[type="radio"] {
+    display: none;
+}
+
+/* Custom radio button appearance */
+.radio-custom {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #888;
+    margin-right: 8px;
+    position: relative;
+}
+
+/* Filled state when the radio button is checked */
+.radio-box input[type="radio"]:checked + .radio-custom {
+    background-color: #4CAF50; /* Green when selected */
+    border-color: #4CAF50;
+}
+
+.radio-custom::before {
+    content: '';
+    display: block;
+    width: 12px;
+    height: 12px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+}
+
+/* Inner circle is shown when selected */
+.radio-box input[type="radio"]:checked + .radio-custom::before {
+    opacity: 1;
+}
+
+
+</style>
+<body>
+    <div class="wrapper">
+        <div id="paramid">
+            <p>Select Parameters</p>
+            <div class="slidecontainer">
+                <p>lambda</p>
+                <div class="hori">
+                    <label class="sliderlabel">50</label>
+                    <input type="range" min="1" max="800" value="50" class="slider" id="lambda">
+                </div>
+            </div>
+            <div class="slidecontainer">
+                <p>Number of attackers</p>
+                <div class="hori">
+                    <label class="sliderlabel">50</label>
+                    <input type="range" min="1" max="800" value="50" class="slider" id="attackers">
+                </div>
+                
+            </div>
+            <div class="slidecontainer">
+                <p>Number of intervals on the x axis</p>
+                <div class="hori">
+                    <label class="sliderlabel">70</label>
+                    <input type="range" min="1" max="100" value="70" class="slider" id="intervals">
+                </div>
+    
+            </div>
+            <div class="slidecontainer" id="timeslider">
+                <p>Time for the intermediate plot</p>
+                <div class="hori">
+                    <label class="sliderlabel">70</label>
+                    <input type="range" min="1" max="100" value="70" class="slider" id="time">
+                </div>
+    
+            </div>
+            <div class="radio-box">
+                <label>
+                    <input type="radio" name="state" value="rel" checked>
+                    <span class="radio-custom"></span>
+                    Relative
+                </label>
+                <label>
+                    <input type="radio" name="state" value="abs">
+                    <span class="radio-custom"></span>
+                    Absolute
+                </label>
+                <label>
+                    <input type="radio" name="state" value="norm">
+                    <span class="radio-custom"></span>
+                    Normalized
+                </label>
+                
+            </div>
+            
+            <input type="button" id="startbtn" value="Inizia" onclick="sim()">
+            <div>
+                <p>Computed Mean: <label for="mean" id="meant"></label></p>
+                <p>Computed Variance: <label for="variance" id="variancet"></label></p>
+
+                <p>Computed Mean: <label for="mean" id="mean"></label></p>
+                <p>Computed Variance: <label for="variance" id="variance"></label></p>
+                
+            </div>
+        </div>
+        <div id="canvadiv"></div>
+    </div>
+    <hr>
+        <div class="notiondiv">
+            <div class="notion">
+                <h2>Statistical Independence in Probability Theory</h2>
+                <p>In probability theory, two events are defined to be <strong>independent</strong> if the occurrence of one event does not affect the probability of the other event occurring. This concept is foundational, as it allows us to calculate the likelihood of multiple events happening in a structured way.</p>
+            
+                <p>Let \( A \) and \( B \) be two events in a probability space. The formal definition of independence between \( A \) and \( B \) is:</p>
+                
+                <div style="text-align:center;">
+                    \( P(A \cap B) = P(A) \cdot P(B) \)
+                </div>
+            
+                <p>This formula states that the probability of both events \( A \) and \( B \) occurring together is equal to the product of their individual probabilities. If this condition holds, we say \( A \) and \( B \) are independent events.</p>
+            
+                <h3>Example of Independent Events</h3>
+                <p>Consider the case of a fair coin flip and a roll of a fair six-sided die. Define events:</p>
+                <ul>
+                    <li>\( A \): The result of the coin flip is heads.</li>
+                    <li>\( B \): The roll of the die shows a six.</li>
+                </ul>
+                <p>The probability of each event is:</p>
+                <ul>
+                    <li>\( P(A) = \frac{1}{2} \)</li>
+                    <li>\( P(B) = \frac{1}{6} \)</li>
+                </ul>
+                
+                <p>Since the coin flip and the die roll are independent (the outcome of one does not affect the other), we can calculate \( P(A \text{ and } B) \) as:</p>
+                
+                <div style="text-align:center;">
+                    \( P(A \cap B) = P(A) \cdot P(B) = \frac{1}{2} \cdot \frac{1}{6} = \frac{1}{12} \)
+                </div>
+            
+                <h3>Analogy with Real-World Concepts</h3>
+
+    <p>The idea of independence in probability can be compared to situations in everyday life where two events do not influence each other. For example:</p>
+    <ul>
+        <li><strong>Weather and dice roll:</strong> Whether it rains has no bearing on the outcome of rolling a die.</li>
+        <li><strong>Light switch and computer usage:</strong> The act of flipping a light switch in one room does not affect a computer being turned on or off in another room.</li>
+    </ul>
+
+    <p> In each of these cases, the occurrence of one event does not change the likelihood of the other event occurring,
+        just as statistical independence implies no influence between events in probability theory.</p>
+            
+            
+        </div>
+</body>
+</html>
