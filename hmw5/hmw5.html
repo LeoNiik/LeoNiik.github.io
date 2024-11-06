@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Random walk Poisson Distribution</title>
+        <!-- Include MathJax script -->
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script src="hmw5.js"></script>
+    </head>
+
+<style>
+body {
+    height: 100vh;
+    width: 100%;
+    margin: 0px;
+
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: row ;
+    padding: 1%;
+    min-height: 580px;
+}
+
+.slidecontainer {
+  width: 100%;
+}
+
+.slider {
+  width: 100%;
+  height: 25px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  background: #04AA6D;
+  cursor: pointer;
+}
+.hori {
+    display: flex;
+    flex-direction: row;
+}  
+
+#startbtn {
+    margin-top: 30px;
+    display: block;
+    width: 100%;
+}
+
+#paramid {
+    margin: 0px;
+}
+
+
+#canvadiv {
+    margin-left: 2%;
+    align-items: flex-end;
+}
+
+.notiondiv {
+    display: flex;
+    flex-wrap: wrap; /* Allows the divs to wrap if there's not enough space */
+    flex-direction: column;
+    gap: 20px; /* Adds space between each notion box */
+    max-width: 80%;
+    margin: 0 auto; /* Centers the div horizontally */
+    margin-top: 3%;
+    justify-content: center; /* Centers the content inside the flexbox */
+}
+
+.notion {
+    background-color: #f9f9f9; /* Light background for each notion */
+    border: 1px solid #ccc; /* Border around each notion */
+    border-radius: 8px; /* Rounded corners */
+    padding: 20px; /* Internal padding for better readability */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+    font-family: Arial, sans-serif; /* Font style */
+    font-size: 16px; /* Font size */
+    color: #333; /* Text color */
+    line-height: 1.5; /* Line height for readability */
+}
+
+.notiondiv .notion h2 {
+    font-size: 18px; /* Slightly larger font for the titles */
+    margin-bottom: 10px; /* Space between the title and the text */
+    color: #007bff; /* Color for the title (optional) */
+}
+
+.radio-box {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    font-family: Arial, sans-serif;
+}
+
+.radio-box label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Hide the default radio button */
+.radio-box input[type="radio"] {
+    display: none;
+}
+
+/* Custom styling for sim-choice radio button */
+.sim-choice {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #888;
+    margin-right: 8px;
+    position: relative;
+}
+
+.radio-box input[type="radio"]:checked + .sim-choice {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+.sim-choice::before {
+    content: '';
+    display: block;
+    width: 12px;
+    height: 12px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+}
+
+.radio-box input[type="radio"]:checked + .sim-choice::before {
+    opacity: 1;
+}
+
+/* Custom styling for mode-choice radio button */
+.mode-choice {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #888;
+    margin-right: 8px;
+    position: relative;
+}
+
+.radio-box input[type="radio"]:checked + .mode-choice {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+.mode-choice::before {
+    content: '';
+    display: block;
+    width: 12px;
+    height: 12px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+}
+
+.radio-box input[type="radio"]:checked + .mode-choice::before {
+    opacity: 1;
+}
+
+</style>
+<body>
+    
+    <div class="wrapper">
+        <div id="paramid">
+            <!-- Sim Choice Radio Buttons -->
+            <div class="radio-box">
+                <label>
+                    <input type="radio" name="sim" value="bernoulli">
+                    <span class="sim-choice"></span>
+                    Bernoulli
+                </label>
+                <label>
+                    <input type="radio" name="sim" value="poisson" checked>
+                    <span class="sim-choice"></span>
+                    Poisson
+                </label>
+            </div>
+            <p>Select Parameters</p>
+            <div class="slidecontainer">
+                <p>lambda</p>
+                <div class="hori">
+                    <label class="sliderlabel">50</label>
+                    <input type="range" min="1" max="800" value="50" class="slider" id="lambda">
+                </div>
+            </div>
+            <div class="slidecontainer">
+                <p>Probability</p>
+                <div class="hori">
+                    <label class="sliderlabel">50</label>
+                    <input type="range" min="1" max="100" value="50" class="slider" id="probability">
+                </div>
+            </div>
+            <div class="slidecontainer">
+                <p>Number of attackers</p>
+                <div class="hori">
+                    <label class="sliderlabel">50</label>
+                    <input type="range" min="1" max="800" value="50" class="slider" id="attackers">
+                </div>
+            </div>
+            <div class="slidecontainer">
+                <p>Number of intervals on the x axis</p>
+                <div class="hori">
+                    <label class="sliderlabel">70</label>
+                    <input type="range" min="1" max="100" value="70" class="slider" id="intervals">
+                </div>
+            </div>
+            <div class="slidecontainer" id="timeslider">
+                <p>Time for the intermediate plot</p>
+                <div class="hori">
+                    <label class="sliderlabel">70</label>
+                    <input type="range" min="1" max="100" value="70" class="slider" id="time">
+                </div>
+            </div>
+
+            <!-- Mode Choice Radio Buttons -->
+            <div class="radio-box">
+                <label>
+                    <input type="radio" name="mode" value="rel" checked>
+                    <span class="mode-choice"></span>
+                    Relative
+                </label>
+                <label>
+                    <input type="radio" name="mode" value="abs">
+                    <span class="mode-choice"></span>
+                    Absolute
+                </label>
+                <label>
+                    <input type="radio" name="mode" value="norm">
+                    <span class="mode-choice"></span>
+                    Normalized
+                </label>
+            </div>
+
+            <input type="button" id="startbtn" value="Inizia" onclick="sim()">
+            <div>
+                <p>Time t</p>
+                <p>Computed Mean: <label for="mean" id="meant"></label></p>
+                <p>Computed Variance: <label for="variance" id="variancet"></label></p>
+            </div>
+            <div>
+                <p>Time n</p>
+                <p>Computed Mean: <label for="mean" id="mean"></label></p>
+                <p>Computed Variance: <label for="variance" id="variance"></label></p>
+            </div>
+        </div>
+        <div id="canvadiv"></div>
+    </div>
+    <hr>
+        <div class="notiondiv">
+            <div class="notion">
+                <h2>Proof of the Cauchy-Schwarz Inequality</h2>
+                <p>The Cauchy-Schwarz inequality states that for any real or complex sequences \( a_i \) and \( b_i \), we have:</p>
+                <div style="text-align: center;">
+                    \( \left( \sum_{i=0}^n a_i b_i \right)^2 \leq \left( \sum_{i=0}^n a_i^2 \right) \left( \sum_{i=0}^n b_i^2 \right) \).
+                </div>
+                
+                <p>To prove this, consider the following approach:</p>
+                
+                <p>Define a function \( f(t) \) for a real parameter \( t \):</p>
+                <div style="text-align: center;">
+                    \( f(t) = \sum_{i=0}^n (a_i + t b_i)^2 \).
+                </div>
+                
+                <p>Since \( f(t) \) is a sum of squares, it is always non-negative:</p>
+                <div style="text-align: center;">
+                    \( f(t) \geq 0 \).
+                </div>
+                
+                <p>Expanding \( f(t) \), we get:</p>
+                <div style="text-align: center;">
+                    \( f(t) = \sum_{i=0}^n (a_i^2 + 2 t a_i b_i + t^2 b_i^2) \).
+                </div>
+                
+                <p>Breaking this down, we have:</p>
+                <div style="text-align: center;">
+                    \( f(t) = \sum_{i=0}^n a_i^2 + 2t \sum_{i=0}^n a_i b_i + t^2 \sum_{i=0}^n b_i^2 \).
+                </div>
+                
+                <p>Since \( f(t) \geq 0 \) for all \( t \), the discriminant of this quadratic function in \( t \) must be less than or equal to zero. This discriminant is given by:</p>
+                <div style="text-align: center;">
+                    \( \left( \sum_{i=0}^n a_i b_i \right)^2 - \left( \sum_{i=0}^n a_i^2 \right) \left( \sum_{i=0}^n b_i^2 \right) \leq 0 \).
+                </div>
+                
+                <p>This inequality simplifies to:</p>
+                <div style="text-align: center;">
+                    \( \left( \sum_{i=0}^n a_i b_i \right)^2 \leq \left( \sum_{i=0}^n a_i^2 \right) \left( \sum_{i=0}^n b_i^2 \right) \),
+                </div>
+                
+                <p>which is the Cauchy-Schwarz inequality, as desired.</p>
+            </div>
+            <div class="notion">
+                <h2>Reflect on the concepts of independence and uncorrelation</h2>
+                <p>Independence and uncorrelation are two important concepts in probability theory and statistics that describe the relationship between random variables.</p>
+                <p><strong>Independence:</strong> Two random variables are considered independent if the occurrence of one event does not affect the probability of the other event. Mathematically, two random variables \( X \) and \( Y \) are independent if their joint probability distribution can be expressed as the product of their marginal distributions:</p>
+                <div style="text-align: center;">
+                    \( P(X = x, Y = y) = P(X = x) \cdot P(Y = y) \).
+                </div>
+
+                <p><strong>Uncorrelation:</strong> Two random variables are considered uncorrelated if their covariance is zero. Mathematically, the covariance between two random variables \( X \) and \( Y \) is defined as:</p>
+                <div style="text-align: center;">
+                    \( \text{Cov}(X, Y) = E[(X - \mu_X)(Y - \mu_Y)] \),
+                </div>
+                <p>where \( E \) denotes the expected value, and \( \mu_X \) and \( \mu_Y \) are the means of \( X \) and \( Y \), respectively. If the covariance is zero, the random variables are uncorrelated.</p>
+                <p>It is important to note that independence implies uncorrelation, but uncorrelation does not necessarily imply independence. In other words, if two random variables are independent, they are also uncorrelated. However, uncorrelation does not guarantee independence, as there may be other forms of dependence between the variables.</p>
+
+                <p>Understanding the concepts of independence and uncorrelation is crucial in various statistical analyses, as they help in determining the relationships between random variables and the assumptions made in statistical models.</p>
+
+            </div>
+        </div>
+</body>
+</html>
