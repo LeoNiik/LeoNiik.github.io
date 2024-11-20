@@ -1,14 +1,14 @@
 
 
-var probability = .7;
 
 var n = 5
 var m = 10
 var STEP;
-var canvas;
+// var canvas;
 
-var ctx;
-
+let probability;
+let ctx;
+let ctx2;
 //result vector
 var attackersSuccesses;
 
@@ -105,8 +105,8 @@ function ChangeInterface(value){
                 timeSlider.max = Math.floor(Number(slider.value)*2/3).toString();
                 timeSlider.value = Math.floor(Number(slider.value)/3).toString();
                 
-                
-                parameters["lambda"] = Number(parameters["intervals"])/2;
+
+                // parameters["lambda"] = Number(parameters["intervals"])/2;
 
                 //update the parameter time
                 parameters["time"] = timeSlider.value;
@@ -169,8 +169,10 @@ document.addEventListener('DOMContentLoaded', async (event) => {
     var div = document.getElementById('canvadiv');
     div.appendChild(canvas);
     cursorLayer = document.getElementById("CursorLayer");
-    ctx = ctx
     DrawAxis(ctx);
+
+
+
 });
 
 // Function to initialize the attackers
@@ -209,13 +211,13 @@ function welfordVariance(arr, mode) {
     return { mean, variance };
 }
 
-//
+
 async function sim(){
-    
+    let ctx = canvas.getContext('2d');
+    // console.log(ctx);    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = '#000000'
     // let timeSlider = document.getElementById('') 
-
     n = Number(parameters["attackers"]) || 50;
     t = Number(parameters["time"]) || 16;
     lambda = Number(parameters["lambda"]);
@@ -225,7 +227,6 @@ async function sim(){
     else 
         probability = lambda/N;
     console.log(parameters);
-    //TODO: resolve the problem that the parameters get reset when change sim 
     
     let selectedMode = document.querySelector('input[name="mode"]:checked').value;
     let selectedSim = document.querySelector('input[name="mode"]:checked').value;
@@ -236,10 +237,9 @@ async function sim(){
     //define the step
     STEP = lineChartWidth/N;
 
-    console.log(mode, sim);
+    // console.log(mode, sim);
     DrawAxis(ctx);
 
-    
     let attackers = initializeAttackers(n,N);
     let AllPaths = []
     attackersSuccesses = []
@@ -249,83 +249,65 @@ async function sim(){
         let newPath = drawTrajectoryRelative(ctx, attackers[i], mode);
         AllPaths.push(newPath);
         ctx.stroke(newPath);
-
+        
     }
-    
-    
-    let statsTimet = plotFrequencyDistributionAtStep(attackers, t, mode);
+
+    let statistics = plotHistograms(ctx, attackers, N, t, mode);
+    console.log(statistics);
+    let statsTimet = statistics[t];
     document.getElementById('meant').innerText = statsTimet.mean.toFixed(5);
     document.getElementById('variancet').innerText = statsTimet.variance.toFixed(5);
-
-
-    let statsTimen = plotFrequencyDistributionAtStep(attackers, N, mode)
+    
+    
+    let statsTimen = statistics[N];
     document.getElementById('mean').innerText = statsTimen.mean.toFixed(5);
     document.getElementById('variance').innerText = statsTimen.variance.toFixed(5);
+    return;
 
 }
 
-function plotFrequencyDistributionAtStep(attackers, atStep, mode){
+function plotHistograms(ctx, attackers, nIntervals, t, mode) {
+    
+    let histTimeT = new Histogram(STEP * t + lineChartX, plotChartY, plotWidth, plotHeight, ctx);
+    let successesTimeT = getAttackersSuccessesAtStep(attackers, t);
+
+    histTimeT.plotEMS(count(successesTimeT), mode, t);
+    
+    let histTimeN = new Histogram(STEP * N + lineChartX, plotChartY, plotWidth, plotHeight, ctx);
+    let successesTimeN = getAttackersSuccessesAtStep(attackers, N);
+    let countTimeN = count(successesTimeN);
+    
+
+    histTimeN.plotEMS(countTimeN, mode, nIntervals);
+    return getStatistics([successesTimeT, successesTimeN], mode, [t, N]);
+}
+
+
+function getStatistics(successes, mode, time){
+    //time is list of steps
+    //successes is a list of lists of successes
+
+    let stats = {};
+    console.assert(successes.length === time.length, "The number of successes and the number of steps must be the same");
+    for (let i = 0; i < successes.length; i++) {
+        const element = successes[i];
+        stats[time[i]] = welfordVariance(element, mode);
+    }
+
+    return stats;
+}
+
+function getAttackersSuccessesAtStep(attackers, atStep){
+    let attackersSuccesses = [];
     attackers.forEach(element => {
         let val = element.successesPerStep[atStep];
         if(val !== undefined){
-
+            
             attackersSuccesses.push(val);
         }
     });
-    plotFrequencyDistribution(attackersSuccesses, mode, atStep);
-    let statistics = welfordVariance(attackersSuccesses, mode);
-    
-    
-    attackersSuccesses = [];
-    return statistics;
-
+    return attackersSuccesses;
 }
-function cleanPlotChartArea(xPos, plotChartY, plotWidth, plotHeight, ctx){
-    ctx.clearRect(xPos, plotChartY, plotWidth, plotHeight);
-
-}
-
-function plotFrequencyDistribution(arr, mode, numAttack) {
-    // Disegna i dati di frequenza nel rettangolo del plot chart
-
-    let xPos = lineChartX+ numAttack*STEP;
-
-    //cleans and redraw the area
-    cleanPlotChartArea(xPos, plotChartY, plotWidth, plotHeight, ctx);
-    drawChartArea(xPos, plotChartY, plotWidth, plotHeight, ctx);
-
-    let frequencies = count(arr); //array containing all the frequencies of every n° of success
-    
-    let maxVal = arrMax(frequencies); //find the maximum
-
-    let scaleFactor = STEP/4;
-    if(mode === "rel")
-     scaleFactor = (lineChartHeight/(2*numAttack));
-    if(mode === "norm")
-        scaleFactor = Math.sqrt(lineChartHeight)/(2*Math.sqrt(numAttack));
-
-    let barWidthUnit = (plotWidth-1)/maxVal;
-    
-    ctx.lineWidth = 7;
-    ctx.strokeStyle = 'yellow';
-    let Histogram = [];
-
-    for (let i = 0; i < frequencies.length; i++) {
-
-        let freq = frequencies[i] || 0;  // Se il valore non esiste, usa 0
-        let barWidth = freq * barWidthUnit;  // Altezza della barra in base alla frequenza 
-        
-        let yInit = lineChartY + lineChartHeight/2
-        let yPos = yInit + i*scaleFactor - (numAttack-i)*scaleFactor
-        let entry = new Path2D();
-        drawPathLine(xPos, yPos,xPos + barWidth, yPos , entry);
-        Histogram.push(entry);
-        ctx.stroke(entry);
-    }
-    return Histogram;
-    
-}
-
 
 
 // Funzione per contare le occorrenze dei valori in arr
@@ -340,6 +322,7 @@ function count(arr) {
     }
     return c;
 }
+
 
 function arrMax(arr){
     let max = 0;
@@ -373,20 +356,135 @@ class Chart {
         this.height = height;
         this.ctx = ctx;
     }
+    
 
     cleanChartArea(){
-        this.ctx.clearRect(this.x, this.y, this.width, this.height);
-    
+        // this.ctx.strokeStyle = '';
+        this.ctx.fillStyle = 'white';
+        // this.ctx.clearRect(this.x, this.y, this.width, this.height);
+        this.ctx.fillRect(this.x, this.y, this.width, this.height);
     }   
     
-    drawPlotChartArea() {
+    drawChartArea() {
         this.ctx.strokeStyle = 'black';
+        this.ctx.lineWidth = 1;
         this.ctx.beginPath();
         this.ctx.rect(this.x, this.y, this.width, this.height);
         this.ctx.stroke();
+        this.ctx.closePath();
+        }   
+}
+
+class Histogram extends Chart {
+
+    constructor(xPos, yPos, width, height, ctx) {
+        super(xPos,yPos,width, height, ctx)
     }
 
+    //
+    plotHorizontal = (frequencies, scaleFactor, intervals) => {
     
+        let maxVal = arrMax(frequencies); //find the maximum
+        let barWidthUnit = (this.width)/maxVal;
+        // let xPlot = this.xPos + numAttack*step;    
+
+        //clean chart area
+        
+        this.cleanChartArea();
+        this.drawChartArea();
+
+        for (let i = 0; i < intervals; i++) {
+            
+            let freq = frequencies[i] || 0;  // Se il valore non esiste, usa 0
+            let barWidth = freq * barWidthUnit;  // Altezza della barra in base alla frequenza 
+
+            let yIntervals = this.height/intervals;
+
+            let yInit =  - this.y + yIntervals; //still wondering why i have to subtract the y
+            
+            let yPlot = yInit + i*yIntervals;
+            
+            this.ctx.fillStyle = 'yellow';
+            // console.log("yplot", yPlot,"yInit", yIni t);
+            
+
+            //INTERVALS LINES 
+            // let intLines = new Path2D();
+            // this.ctx.strokeStyle = 'black';
+            // drawPathLine(this.x, yPlot, this.x + this.width, yPlot, intLines, this.height); 
+            // this.ctx.stroke(intLines);
+            
+            let path = new Path2D();
+            this.ctx.lineWidth = 7;
+            this.ctx.strokeStyle = 'yellow';
+            drawPathLine(this.x, yPlot - yIntervals/2 - this.ctx.lineWidth, this.x + barWidth, yPlot - yIntervals/2 - this.ctx.lineWidth, path, this.height);
+            this.ctx.stroke(path);
+            // drawRect(this.x, (yPlot - yIntervals/2 + yIntervals/4)*scaleFactor, barWidth, yIntervals/2, this.ctx, this.height);
+            // break;
+        }
+    }
+    //function to plot the vertical histogram
+    plotVertical(frequencies, scaleFactor, step){
+        let maxVal = arrMax(frequencies); //find the maximum
+        let barWidthUnit = (this.height-1)/maxVal;
+        // let xPlot = this.xPos + numAttack*step;    
+        
+        ctx.lineWidth = 7;
+        ctx.strokeStyle = 'yellow';
+        let Histogram = [];
+
+        for (let i = 0; i < frequencies.length; i++) {
+
+            let freq = frequencies[i] || 0;  // Se il valore non esiste, usa 0
+            let barWidth = freq * barWidthUnit;  // Altezza della barra in base alla frequenza 
+            let xInit = this.xPos + this.width/2
+            let xPlot = xInit + i*scaleFactor - (numAttack-i)*scaleFactor
+            let entry = new Path2D();
+            
+            drawPathLine(xPlot, this.yPos, xPlot, this.yPos + barWidth , entry, canvas.height);
+            Histogram.push(entry);
+            ctx.stroke(entry);
+        }
+        return Histogram;
+    }
+
+    plotEMS(frequencies,mode, nsteps){
+            //cleans and redraw the area
+        this.cleanChartArea();
+        this.drawChartArea();
+
+        let maxVal = arrMax(frequencies); //find the maximum
+        
+        let scaleFactor = STEP/4;
+
+        if(mode === "rel")
+            scaleFactor = (this.height/(2*nsteps));
+        if(mode === "norm")
+            scaleFactor = Math.sqrt(this.height)/(2*Math.sqrt(nsteps));
+
+        let barWidthUnit = (this.width-1)/maxVal;
+        let xPos = this.x;
+
+        let Histogram = [];
+        this.ctx.lineWidth = 7;
+        this.ctx.strokeStyle = 'yellow';
+
+        for (let i = 0; i < frequencies.length; i++) {
+
+            let freq = frequencies[i] || 0;  // Se il valore non esiste, usa 0
+            let barWidth = freq * barWidthUnit;  // Altezza della barra in base alla frequenza 
+            
+            let yInit = -this.y + lineChartHeight/2;
+            let yPos = yInit + i*scaleFactor - (nsteps-i)*scaleFactor
+            let entry = new Path2D();
+            console.log("ypos", yPos, "xpos", xPos);
+            drawPathLine(xPos, yPos,xPos + barWidth, yPos , entry, this.height);
+            Histogram.push(entry);
+            this.ctx.stroke(entry);
+        }
+        return Histogram;
+    }
+
 }
 
 
@@ -452,7 +550,6 @@ function drawTrajectoryRelative(ctx, attacker, mode) {
         if (randomJump > 0) {
             attacker.recordSuccess(); // Registra un successo se l'attacco ha successo
         }
-
         // Aggiorniamo il passo dell'attaccante
         attacker.incrementStep();
 
@@ -462,8 +559,7 @@ function drawTrajectoryRelative(ctx, attacker, mode) {
         let startY = baseY + (prevCoords.y); // Invertito per disegnare dal basso verso l'alto
         let endX = baseX + currCoords.x;
         let endY = baseY + (currCoords.y);   // Invertito per lo stesso motivo
-        
-        drawPathLine(startX, startY, endX, endY, path);
+        drawPathLine(startX, startY, endX, endY, path, canvas.height);
     }
 
     return path;
@@ -489,9 +585,16 @@ function drawLine(xi, yi, xf, yf, ctx){
     ctx.closePath();
 }
 
-function drawPathLine(xi, yi, xf, yf, path){
-    path.moveTo(xi,canvas.height-yi);
-    path.lineTo(xf,canvas.height-yf);
+function drawRect(x, y, rwidth, rheight, ctx, canvaheight){
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'yellow';
+    //invert y
+    ctx.fillRect(x, canvaheight - y, rwidth, rheight);
+}
+
+function drawPathLine(xi, yi, xf, yf, path, height){
+    path.moveTo(xi, height-yi);
+    path.lineTo(xf, height-yf);
 }
 
 // dev(n) = dev(n-1) + (x(n)- x(n-1))*(x(n)-mean(n))
