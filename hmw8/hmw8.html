@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Samples Statistic given the distribution</title>
+        <!-- Include MathJax script -->
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script src="hmw8.js"></script>
+    </head>
+
+<style>
+body {
+    height: 100vh;
+    width: 100%;
+    margin: 0px;
+
+}
+
+.hori {
+    display: flex;
+    flex-direction: row;
+    margin: 0 auto;
+}  
+
+
+/* center canvas */
+#canvadiv {
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+}
+
+
+.notiondiv {
+    display: flex;
+    flex-wrap: wrap; /* Allows the divs to wrap if there's not enough space */
+    flex-direction: column;
+    gap: 20px; /* Adds space between each notion box */
+    max-width: 80%;
+    margin: 0 auto; /* Centers the div horizontally */
+    margin-top: 3%;
+    justify-content: center; /* Centers the content inside the flexbox */
+}
+
+.notion {
+    background-color: #f9f9f9; /* Light background for each notion */
+    border: 1px solid #ccc; /* Border around each notion */
+    border-radius: 8px; /* Rounded corners */
+    padding: 20px; /* Internal padding for better readability */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+    font-family: Arial, sans-serif; /* Font style */
+    font-size: 16px; /* Font size */
+    color: #333; /* Text color */
+    line-height: 1.5; /* Line height for readability */
+}
+
+.notiondiv .notion h2 {
+    font-size: 18px; /* Slightly larger font for the titles */
+    margin-bottom: 10px; /* Space between the title and the text */
+    color: #007bff; /* Color for the title (optional) */
+}
+
+
+.radio-box input[type="radio"]:checked + .mode-choice::before {
+    opacity: 1;
+}
+/* center wrapper */
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    padding: 1%;
+    min-height: 580px;
+    justify-content: center; /* Center the canvas horizontally */
+    align-items: center; /* Center the canvas vertically */
+}
+
+#inputs {
+    /* Adds space below and on top the inputs */
+    margin: 20px 0;
+    display: flex;
+    flex-wrap: wrap; /* Allows the divs to wrap if there's not enough space */
+    width: 100%; /* Ensures the inputs take the full width of the container */
+    gap: 10px; /* Adds space between each input */
+}
+
+#inputs .hori {
+    flex: 1 1 100%; /* Ensures each input takes the full width of the container */
+}
+
+</style>
+<body>
+    <div class="wrapper">
+        <div class="inputs">
+            <textarea id="input" rows="4" cols="50" placeholder="Enter Some Text"></textarea>
+            <button id="start" onclick="main()">Start</button>
+        </div>
+        <div id="canvadiv">
+            <canvas id="canvas" width="1500" height="700" style="border:0px;"></canvas>
+        </div>
+        <div id="output">
+            <p id="outputtext"></p>
+        </div>
+    </div>
+    <hr>
+        <div class="notiondiv">
+        </div>
+</body>
+</html>
