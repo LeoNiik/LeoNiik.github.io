@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Samples Statistic given the distribution</title>
+        <!-- Include MathJax script -->
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script src="opt.js"></script>
+    </head>
+
+<style>
+body {
+    height: 100vh;
+    width: 100%;
+    margin: 0px;
+
+}
+
+.hori {
+    display: flex;
+    flex-direction: row;
+    margin: 0 auto;
+}  
+
+
+/* center canvas */
+#canvadiv {
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+}
+
+
+.notiondiv {
+    display: flex;
+    flex-wrap: wrap; /* Allows the divs to wrap if there's not enough space */
+    flex-direction: column;
+    gap: 20px; /* Adds space between each notion box */
+    max-width: 80%;
+    margin: 0 auto; /* Centers the div horizontally */
+    margin-top: 3%;
+    justify-content: center; /* Centers the content inside the flexbox */
+}
+
+.notion {
+    background-color: #f9f9f9; /* Light background for each notion */
+    border: 1px solid #ccc; /* Border around each notion */
+    border-radius: 8px; /* Rounded corners */
+    padding: 20px; /* Internal padding for better readability */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+    font-family: Arial, sans-serif; /* Font style */
+    font-size: 16px; /* Font size */
+    color: #333; /* Text color */
+    line-height: 1.5; /* Line height for readability */
+}
+
+.notiondiv .notion h2 {
+    font-size: 18px; /* Slightly larger font for the titles */
+    margin-bottom: 10px; /* Space between the title and the text */
+    color: #007bff; /* Color for the title (optional) */
+}
+
+
+.radio-box input[type="radio"]:checked + .mode-choice::before {
+    opacity: 1;
+}
+/* center wrapper */
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    padding: 1%;
+    min-height: 580px;
+    justify-content: center; /* Center the canvas horizontally */
+    align-items: center; /* Center the canvas vertically */
+}
+
+#inputs {
+    /* Adds space below and on top the inputs */
+    margin: 20px 0;
+    display: flex;
+    flex-wrap: wrap; /* Allows the divs to wrap if there's not enough space */
+    width: 100%; /* Ensures the inputs take the full width of the container */
+    gap: 10px; /* Adds space between each input */
+}
+
+#inputs .hori {
+    flex: 1 1 100%; /* Ensures each input takes the full width of the container */
+}
+
+</style>
+<body>
+    <div class="wrapper">
+        <div class="inputs">
+            <!--alphanumeric input fields -->
+            <div class="hori">
+                <input type="text" id="input" value="Hello World">
+                <div id="paramid">
+                    <!-- <label for="intervals">Parameter (n):</label>
+                    <input type="text" id="intervals" name="intervals" placeholder="Insert number of intervals">
+                    <input type="text" placeholder="Number of samples" id="nsamples">
+                    <input type="text" placeholder="Number of values x sample" id="nvalues"> -->
+                    <button id="start" onclick="main()">Start</button>
+                </div>                
+                
+                
+            </div>
+            <!-- <div id="inputs"> -->
+            <div id="output"></div>
+        </div>
+        <!-- <div id="canvadiv">
+            <canvas id="canvas1" width="1400" height="600" style="border:0px;"></canvas>
+        </div> -->
+    </div>
+    <hr>
+        <div class="notiondiv">
+            <!-- Theory/Research Research: Recall the fundamental ideas of the main encryption methods and their statistical properties. -->
+            <div class="notion">
+                
+                <h2>Encryption Methods and Their Statistical Properties</h2>
+                <p>
+                    Encryption methods are fundamental to securing information and rely on both mathematical and statistical principles. Key ideas include:
+                    <ul>
+                        <li><strong>Symmetric Encryption:</strong> Algorithms like AES use a single key for encryption and decryption. Their statistical properties ensure that ciphertexts appear as random as possible, minimizing patterns that could aid attackers.</li>
+                        <li><strong>Asymmetric Encryption:</strong> Algorithms like RSA rely on key pairs (public and private). Statistical properties ensure the difficulty of reversing encryption without the private key, often based on problems like integer factorization.</li>
+                        <li><strong>Hash Functions:</strong> Used for data integrity, they ensure a uniform distribution of outputs, reducing the likelihood of collisions (two inputs producing the same hash).</li>
+                    </ul>
+                    
+                    <strong>Applications:</strong>
+                    <ul>
+                        <li><strong>Data Integrity:</strong> Hashing ensures data has not been tampered with during transmission.</li>
+                        <li><strong>Secure Communication:</strong> Encryption secures communication channels against eavesdropping and unauthorized access.</li>
+                        <li><strong>Authentication:</strong> Methods like digital signatures rely on asymmetric encryption to validate identities.</li>
+                    </ul>
+                </p>
+
+
+            </div>
+
+            <div class="notion">
+                <h2>Statistical Properties of Encryption Methods</h2>
+                <p>
+                    Encryption methods rely heavily on statistical principles to ensure security and randomness. Key statistical properties include:
+                    <ul>
+                        <li><strong>Randomness:</strong> Effective encryption algorithms produce ciphertext that appears statistically random. This minimizes patterns and correlations that could be exploited in cryptanalysis.</li>
+                        <li><strong>Uniform Distribution:</strong> The output of encryption functions (e.g., ciphertext or hash values) should be uniformly distributed across the possible output space, making every output equally probable.</li>
+                        <li><strong>Entropy:</strong> High entropy in the output ensures unpredictability, reducing the likelihood of successful brute-force attacks.</li>
+                        <li><strong>Independence:</strong> The ciphertext produced for different plaintext inputs must exhibit independence. Statistical dependence can reveal vulnerabilities.
+                        </li>
+                        <li><strong>Collision Resistance:</strong> In hash functions, the probability of two different inputs producing the same hash (a collision) must be statistically negligible.
+                        </li>
+                    </ul>
+                </p>
+            </div>
+            
+        </div>
+</body>
+</html>
