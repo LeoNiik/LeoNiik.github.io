@@ -1,157 +1,103 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Samples Statistic given the distribution</title>
-        <!-- Include MathJax script -->
-        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-        <script src="hmw9.js"></script>
-    </head>
-
-<style>
-body {
-    height: 100vh;
-    width: 100%;
-    margin: 0px;
-
-}
-
-.hori {
-    display: flex;
-    flex-direction: row;
-    margin: 0 auto;
-}  
-
-
-/* center canvas */
-#canvadiv {
-    margin: 0 auto;
-    display: flex;
-    flex-direction: row;
-}
-
-
-.notiondiv {
-    display: flex;
-    flex-wrap: wrap; /* Allows the divs to wrap if there's not enough space */
-    flex-direction: column;
-    gap: 20px; /* Adds space between each notion box */
-    max-width: 80%;
-    margin: 0 auto; /* Centers the div horizontally */
-    margin-top: 3%;
-    justify-content: center; /* Centers the content inside the flexbox */
-}
-
-.notion {
-    background-color: #f9f9f9; /* Light background for each notion */
-    border: 1px solid #ccc; /* Border around each notion */
-    border-radius: 8px; /* Rounded corners */
-    padding: 20px; /* Internal padding for better readability */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
-    font-family: Arial, sans-serif; /* Font style */
-    font-size: 16px; /* Font size */
-    color: #333; /* Text color */
-    line-height: 1.5; /* Line height for readability */
-}
-
-.notiondiv .notion h2 {
-    font-size: 18px; /* Slightly larger font for the titles */
-    margin-bottom: 10px; /* Space between the title and the text */
-    color: #007bff; /* Color for the title (optional) */
-}
-
-
-.radio-box input[type="radio"]:checked + .mode-choice::before {
-    opacity: 1;
-}
-/* center wrapper */
-.wrapper {
-    display: flex;
-    flex-direction: column;
-    padding: 1%;
-    min-height: 580px;
-    justify-content: center; /* Center the canvas horizontally */
-    align-items: center; /* Center the canvas vertically */
-}
-
-#inputs {
-    /* Adds space below and on top the inputs */
-    margin: 20px 0;
-    display: flex;
-    flex-wrap: wrap; /* Allows the divs to wrap if there's not enough space */
-    width: 100%; /* Ensures the inputs take the full width of the container */
-    gap: 10px; /* Adds space between each input */
-}
-
-#inputs .hori {
-    flex: 1 1 100%; /* Ensures each input takes the full width of the container */
-}
-
-</style>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lebesgue vs Riemann Integral</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
 <body>
-    <div class="wrapper">
-        <div class="inputs">
-            <!--alphanumeric input fields -->
-            <div class="hori">
-                <div id="paramid">
-                    <label for="intervals">Parameter (n):</label>
-                    <input type="text" id="intervals" name="intervals" placeholder="Insert number of intervals">
-                    <input type="text" placeholder="Number of samples" id="nsamples">
-                    <input type="text" placeholder="Number of values x sample" id="nvalues">
-                    <button id="start" onclick="main()">Start</button>
-                </div>                
-            </div>
-            <div id="inputs">
-            </div>
-        </div>
-        <div id="canvadiv">
-            <canvas id="canvas1" width="1400" height="600" style="border:0px;"></canvas>
-        </div>
-    </div>
-    <hr>
-        <div class="notiondiv">
-            <div class="notion">
-                <h2>General Concept of Sampling Mean and Variance</h2>
-                <p>
-                    The sampling mean, denoted as \( \bar{X} \), is the average of a sample drawn from a population:
-                    \[
-                    \bar{X} = \frac{1}{n} \sum_{i=1}^n X_i
-                    \]
-                    where \( X_i \) are the sample values, and \( n \) is the sample size. The variance of the sample mean is:
-                    \[
-                    \text{Var}(\bar{X}) = \frac{\sigma^2}{n}
-                    \]
-                    where \( \sigma^2 \) is the population variance.
-                </p>
-                <p>
-                    Key features of their distributions:
-                    <ul>
-                        <li>The sample mean \( \bar{X} \) tends to a normal distribution as \( n \) increases, according to the Central Limit Theorem.</li>
-                        <li>The sample variance \( S^2 \) is an unbiased estimator of the population variance \( \sigma^2 \).</li>
-                    </ul>
-                </p>
-            
-                <h2>General Idea of Lebesgue–Stieltjes Integration</h2>
-                <p>
-                    The Lebesgue–Stieltjes integral generalizes the Riemann integral by integrating with respect to a function \( G(x) \), which may be non-decreasing and not necessarily absolutely continuous. For a function \( f \), the integral is:
-                    \[
-                    \int_a^b f(x) \, dG(x)
-                    \]
+    <h1>Lebesgue vs Riemann Integral Approximation</h1>
+    <label for="function">Choose function:</label>
+    <select id="function">
+        <option value="exp">Exponential (e^(-x))</option>
+        <option value="sin">Sine (sin(x))</option>
+        <option value="quad">Quadratic (x^2)</option>
+        <option value="step">Step (1 for x >= 0, 0 otherwise)</option>
+        <option value="gauss">Gaussian (e^(-x^2))</option>
+    </select>
+    <button onclick="computeIntegrals()">Compute</button>
+    <p>Riemann Integral: <span id="riemann-result"></span></p>
+    <p>Lebesgue Integral: <span id="lebesgue-result"></span></p>
+    <canvas id="functionPlot" width="400" height="200"></canvas>
 
-                    Graphically it can be seen like this: <br>
+    <script>
+        function f(x, type) {
+            switch (type) {
+                case 'exp': return Math.exp(-x) * (x >= 0 ? 1 : 0);
+                case 'sin': return Math.sin(x);
+                case 'quad': return x * x;
+                case 'step': return x >= 0 ? 1 : 0;
+                case 'gauss': return Math.exp(-x * x);
+            }
+        }
+        
+        function riemannIntegral(f, a, b, N, type) {
+            let dx = (b - a) / N;
+            let sum = 0;
+            for (let i = 0; i < N; i++) {
+                sum += f(a + i * dx, type) * dx;
+            }
+            return sum;
+        }
+        
+        function lebesgueIntegral(f, a, b, N, type) {
+            let y_values = [];
+            for (let i = 0; i < N; i++) {
+                y_values.push(f(a + (i / N) * (b - a), type));
+            }
+            y_values.sort((x, y) => x - y);
+            let sum = 0;
+            for (let i = 1; i < N; i++) {
+                sum += y_values[i] * (1 / N) * (b - a);
+            }
+            return sum;
+        }
+        
+        function computeIntegrals() {
+            const type = document.getElementById('function').value;
+            const a = 0, b = 5, N = 1000;
+            const riemannResult = riemannIntegral(f, a, b, N, type);
+            const lebesgueResult = lebesgueIntegral(f, a, b, N, type);
+            document.getElementById('riemann-result').textContent = riemannResult.toFixed(5);
+            document.getElementById('lebesgue-result').textContent = lebesgueResult.toFixed(5);
+            plotFunction(type, a, b);
+        }
 
-                    <strong>Riemann integration </strong> on the left and <strong>lebesgue integration</strong> on the right
-                    <img src="./integral.jpg" style="width : 100%">
-                    Applications:
-                    <ul>
-                        <li><strong>Probability Theory:</strong> Used to define expectations and distributions of random variables, where \( G(x) \) can represent the cumulative distribution function.</li>
-                        <li><strong>Measure Theory:</strong> Extends integration to general measures, providing a framework for modern analysis and functional analysis.</li>
-                    </ul>
-                </p>
-            </div>
-            
-            
-        </div>
+        function plotFunction(type, a, b) {
+            const ctx = document.getElementById('functionPlot').getContext('2d');
+            const N = 100;
+            let xValues = [], yValues = [];
+            for (let i = 0; i <= N; i++) {
+                let x = a + (i / N) * (b - a);
+                xValues.push(x);
+                yValues.push(f(x, type));
+            }
+
+            if (window.myChart) {
+                window.myChart.destroy();
+            }
+
+            window.myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: xValues,
+                    datasets: [{
+                        label: `Function: ${type}`,
+                        data: yValues,
+                        borderColor: 'blue',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: { title: { display: true, text: 'x' } },
+                        y: { title: { display: true, text: 'f(x)' } }
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
