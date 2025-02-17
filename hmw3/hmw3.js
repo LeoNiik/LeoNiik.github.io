@@ -186,7 +186,7 @@ async function sim(){
         // await sleep(10);
     }
     
-    // plotFrequencyDistributionAtStep(attackers, t, relative);
+    plotFrequencyDistributionAtStep(attackers, t, relative);
     // await sleep(1000);
 
     plotFrequencyDistributionAtStep(attackers, N, relative)
